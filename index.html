@@ -1,0 +1,2107 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Horlar Studio — 3D Visualization, Landscape & Game Assets</title>
+<meta name="description" content="Horlar Studio is a Blender 3D studio creating photorealistic interior, exterior and landscape renders, stage design, and low-poly game-ready assets.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,600;0,700;1,400&family=Outfit:wght@300;400;500;600&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">
+<style>
+
+/* ─── TOKENS ─────────────────────────────────────────── */
+:root {
+  --bg:         #0F0F0F;
+  --surface:    #161616;
+  --surface-2:  #1D1D1D;
+  --border:     #272727;
+  --gold:       #C6963A;
+  --gold-dim:   #9A7130;
+  --gold-pale:  rgba(198,150,58,0.08);
+  --green:      #4A9B6F;
+  --green-pale: rgba(74,155,111,0.09);
+  --text:       #E8E8E8;
+  --muted:      #6E6E6E;
+  --white:      #F4F1EE;
+  --ff-disp:    'Playfair Display', Georgia, serif;
+  --ff-body:    'Outfit', sans-serif;
+  --ff-mono:    'Space Mono', monospace;
+}
+
+/* ─── RESET ──────────────────────────────────────────── */
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+html { scroll-behavior: smooth; }
+body {
+  background: var(--bg);
+  color: var(--text);
+  font-family: var(--ff-body);
+  font-size: 16px;
+  line-height: 1.6;
+  overflow-x: hidden;
+  -webkit-font-smoothing: antialiased;
+}
+img { display: block; width: 100%; height: 100%; object-fit: cover; }
+a { color: inherit; text-decoration: none; }
+
+/* ─── NAV ────────────────────────────────────────────── */
+nav {
+  position: fixed; top: 0; left: 0; right: 0; z-index: 100;
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 20px 60px;
+  transition: background 0.4s, backdrop-filter 0.4s;
+}
+nav.scrolled {
+  background: rgba(12,12,12,0.90);
+  backdrop-filter: blur(16px);
+  border-bottom: 1px solid var(--border);
+}
+.nav-logo {
+  font-family: var(--ff-disp);
+  font-size: 1.3rem; font-weight: 700;
+  letter-spacing: 0.06em; color: var(--white);
+}
+.nav-logo span { color: var(--gold); }
+.nav-links { display: flex; gap: 36px; list-style: none; }
+.nav-links a {
+  font-family: var(--ff-mono); font-size: 0.68rem;
+  letter-spacing: 0.14em; text-transform: uppercase;
+  color: var(--muted); transition: color 0.25s;
+}
+.nav-links a:hover { color: var(--gold); }
+
+/* ─── HERO ───────────────────────────────────────────── */
+.hero {
+  position: relative; height: 100vh; min-height: 620px;
+  display: flex; align-items: flex-end;
+  padding: 0 60px 80px; overflow: hidden;
+}
+.hero-bg {
+  position: absolute; inset: 0;
+  background-image: url('./images/Modern_House_With_Pool_01.jpg');
+  background-size: cover; background-position: center 55%;
+  animation: zoomIn 14s ease-out forwards;
+}
+@keyframes zoomIn { from { transform: scale(1.08); } to { transform: scale(1); } }
+.hero-overlay {
+  position: absolute; inset: 0;
+  background: linear-gradient(to top,
+    rgba(8,8,8,0.94) 0%,
+    rgba(8,8,8,0.42) 48%,
+    rgba(8,8,8,0.12) 100%);
+}
+.hero-line {
+  position: absolute; bottom: 0; left: 60px;
+  width: 0; height: 1px; background: var(--gold);
+  animation: lineGrow 1.2s 1s ease-out forwards;
+}
+@keyframes lineGrow { to { width: calc(100% - 120px); } }
+.hero-content { position: relative; z-index: 2; max-width: 860px; }
+.hero-eyebrow {
+  font-family: var(--ff-mono); font-size: 0.7rem;
+  letter-spacing: 0.22em; text-transform: uppercase; color: var(--gold);
+  margin-bottom: 16px;
+  opacity: 0; animation: fadeUp 0.8s 0.3s forwards;
+}
+.hero-title {
+  font-family: var(--ff-disp);
+  font-size: clamp(2.8rem, 6.5vw, 5.4rem);
+  font-weight: 700; line-height: 1.04; color: var(--white);
+  opacity: 0; animation: fadeUp 0.9s 0.55s forwards;
+}
+.hero-title em { font-style: italic; font-weight: 400; color: var(--gold); }
+.hero-pills {
+  display: flex; gap: 10px; flex-wrap: wrap; margin-top: 24px;
+  opacity: 0; animation: fadeUp 0.8s 0.8s forwards;
+}
+.hero-pill {
+  font-family: var(--ff-mono); font-size: 0.62rem;
+  letter-spacing: 0.14em; text-transform: uppercase;
+  padding: 6px 14px; border-radius: 2px;
+}
+.pill-gold { border: 1px solid var(--gold-dim); color: var(--gold); }
+.pill-green { border: 1px solid #3A7A57; color: var(--green); }
+.hero-sub {
+  margin-top: 18px; font-size: 1rem; font-weight: 300;
+  color: #999; max-width: 480px;
+  opacity: 0; animation: fadeUp 0.8s 1s forwards;
+}
+.hero-scroll {
+  position: absolute; right: 60px; bottom: 86px;
+  display: flex; flex-direction: column; align-items: center; gap: 10px;
+  opacity: 0; animation: fadeUp 0.7s 1.4s forwards;
+}
+.hero-scroll span {
+  font-family: var(--ff-mono); font-size: 0.58rem;
+  letter-spacing: 0.2em; text-transform: uppercase;
+  color: var(--muted); writing-mode: vertical-rl;
+}
+.hero-scroll-bar {
+  width: 1px; height: 46px;
+  background: linear-gradient(to bottom, var(--gold), transparent);
+}
+@keyframes fadeUp {
+  from { opacity: 0; transform: translateY(20px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+/* ─── DUAL IDENTITY STRIP ────────────────────────────── */
+.identity-strip {
+  display: grid; grid-template-columns: 1fr 1fr;
+  border-top: 1px solid var(--border);
+  border-bottom: 1px solid var(--border);
+}
+.identity-half {
+  padding: 48px 60px;
+  display: flex; align-items: flex-start; gap: 24px;
+}
+.identity-half:first-child { border-right: 1px solid var(--border); }
+.id-icon {
+  font-size: 1.6rem; margin-top: 4px; flex-shrink: 0;
+}
+.id-icon.gold { color: var(--gold); }
+.id-icon.green { color: var(--green); }
+.id-title {
+  font-family: var(--ff-disp); font-size: 1.2rem;
+  font-weight: 600; color: var(--white); margin-bottom: 8px;
+}
+.id-desc {
+  font-size: 0.88rem; color: var(--muted);
+  font-weight: 300; line-height: 1.7;
+}
+.id-tags { display: flex; gap: 8px; flex-wrap: wrap; margin-top: 12px; }
+.id-tag {
+  font-family: var(--ff-mono); font-size: 0.58rem;
+  letter-spacing: 0.1em; text-transform: uppercase;
+  padding: 4px 10px; border-radius: 2px;
+}
+.tag-gold { border: 1px solid var(--border); color: var(--gold-dim); }
+.tag-green { border: 1px solid #2E5E44; color: #4A9B6F; }
+
+/* ─── SECTION SHELL ──────────────────────────────────── */
+.section { padding: 90px 60px; }
+.section-header {
+  display: flex; align-items: baseline; gap: 20px;
+  margin-bottom: 16px;
+}
+.section-label {
+  font-family: var(--ff-mono); font-size: 0.65rem;
+  letter-spacing: 0.22em; text-transform: uppercase;
+}
+.label-gold { color: var(--gold); }
+.label-green { color: var(--green); }
+.section-title {
+  font-family: var(--ff-disp);
+  font-size: clamp(1.8rem, 3vw, 2.6rem);
+  font-weight: 600; color: var(--white);
+}
+.section-desc {
+  color: var(--muted); font-weight: 300; font-size: 0.95rem;
+  max-width: 560px; margin-bottom: 40px; line-height: 1.75;
+}
+
+/* ─── FILTER BAR ─────────────────────────────────────── */
+.filter-bar { display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 44px; }
+.filter-btn {
+  font-family: var(--ff-mono); font-size: 0.65rem;
+  letter-spacing: 0.14em; text-transform: uppercase;
+  padding: 7px 18px; border: 1px solid var(--border);
+  background: transparent; color: var(--muted);
+  cursor: pointer; transition: all 0.22s; border-radius: 2px;
+}
+.filter-btn:hover { border-color: var(--gold-dim); color: var(--gold); }
+.filter-btn.active-gold { background: var(--gold); border-color: var(--gold); color: #0F0F0F; font-weight: 700; }
+.filter-btn.active-green { background: var(--green); border-color: var(--green); color: #0F0F0F; font-weight: 700; }
+
+/* ─── GALLERY GRID ───────────────────────────────────── */
+.gallery {
+  display: grid;
+  grid-template-columns: repeat(12, 1fr);
+  grid-auto-rows: 255px;
+  grid-auto-flow: dense;
+  gap: 10px;
+}
+.g-wide  { grid-column: span 8; }
+.g-med   { grid-column: span 6; }
+.g-slim  { grid-column: span 4; }
+.g-tall  { grid-row: span 2; }
+
+/* ─── CARD ───────────────────────────────────────────── */
+.card {
+  position: relative; overflow: hidden;
+  background: var(--surface-2); cursor: pointer; border-radius: 3px;
+}
+.card img {
+  transition: transform 0.65s cubic-bezier(0.25,0.46,0.45,0.94), filter 0.45s;
+  filter: brightness(0.94);
+}
+.card:hover img { transform: scale(1.06); filter: brightness(0.65); }
+.card-reveal {
+  position: absolute; bottom: 0; left: 0; right: 0;
+  padding: 28px 22px 18px;
+  background: linear-gradient(to top, rgba(4,4,4,0.96) 0%, transparent 100%);
+  transform: translateY(28px); opacity: 0;
+  transition: transform 0.42s cubic-bezier(0.25,0.46,0.45,0.94), opacity 0.3s;
+}
+.card:hover .card-reveal { transform: translateY(0); opacity: 1; }
+.card-cat {
+  font-family: var(--ff-mono); font-size: 0.58rem;
+  letter-spacing: 0.18em; text-transform: uppercase; margin-bottom: 4px;
+}
+.cat-gold { color: var(--gold); }
+.cat-green { color: var(--green); }
+.card-name {
+  font-family: var(--ff-disp); font-size: 1.05rem;
+  font-weight: 600; color: var(--white);
+}
+.card.hidden, .asset-card.hidden { display: none; }
+
+/* ─── GAME ASSETS SECTION ────────────────────────────── */
+.game-section { background: var(--surface); }
+
+/* ─── ASSET GRID ─────────────────────────────────────── */
+.asset-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 2px;
+  margin-bottom: 2px;
+}
+.asset-card {
+  position: relative; overflow: hidden;
+  aspect-ratio: 16/10;
+  background: var(--surface-2); cursor: pointer;
+}
+.asset-card img {
+  transition: transform 0.6s ease, filter 0.4s;
+  filter: brightness(0.92);
+}
+.asset-card:hover img { transform: scale(1.07); filter: brightness(0.55); }
+.asset-card .card-reveal { padding: 22px 18px 14px; }
+
+/* ─── TECH SPECS ─────────────────────────────────────── */
+.specs-row {
+  display: flex; gap: 0;
+  border: 1px solid var(--border);
+  border-radius: 3px; overflow: hidden;
+  margin-bottom: 48px;
+}
+.spec-cell {
+  flex: 1; padding: 20px 24px;
+  border-right: 1px solid var(--border);
+}
+.spec-cell:last-child { border-right: none; }
+.spec-key {
+  font-family: var(--ff-mono); font-size: 0.6rem;
+  letter-spacing: 0.14em; text-transform: uppercase;
+  color: var(--muted); margin-bottom: 6px;
+}
+.spec-val {
+  font-family: var(--ff-disp); font-size: 0.95rem;
+  font-weight: 600; color: var(--white);
+}
+
+/* ─── ABOUT ──────────────────────────────────────────── */
+.about-grid {
+  display: grid; grid-template-columns: 1fr 1fr; gap: 80px;
+  align-items: start;
+}
+.about-text p {
+  color: #AAAAAA; font-weight: 300; line-height: 1.82;
+  margin-bottom: 18px; font-size: 0.96rem;
+}
+.about-text p strong { color: var(--white); font-weight: 500; }
+.stats-row { display: flex; gap: 44px; margin-top: 36px; }
+.stat-num {
+  font-family: var(--ff-disp); font-size: 2.2rem;
+  font-weight: 700; color: var(--gold); line-height: 1;
+}
+.stat-label {
+  font-family: var(--ff-mono); font-size: 0.6rem;
+  letter-spacing: 0.14em; text-transform: uppercase;
+  color: var(--muted); margin-top: 6px;
+}
+.skills-col { display: flex; flex-direction: column; gap: 0; }
+.skill-group { margin-bottom: 32px; }
+.skill-group-title {
+  font-family: var(--ff-mono); font-size: 0.62rem;
+  letter-spacing: 0.18em; text-transform: uppercase;
+  margin-bottom: 16px; padding-bottom: 8px;
+  border-bottom: 1px solid var(--border);
+}
+.skill-group-title.gold { color: var(--gold); }
+.skill-group-title.green { color: var(--green); }
+.skill-row { display: flex; flex-direction: column; gap: 7px; margin-bottom: 14px; }
+.skill-meta { display: flex; justify-content: space-between; }
+.skill-name {
+  font-family: var(--ff-mono); font-size: 0.65rem;
+  letter-spacing: 0.1em; text-transform: uppercase; color: var(--muted);
+}
+.skill-pct { font-family: var(--ff-mono); font-size: 0.65rem; }
+.pct-gold { color: var(--gold); }
+.pct-green { color: var(--green); }
+.skill-bar { height: 2px; background: var(--border); border-radius: 2px; overflow: hidden; }
+.skill-fill {
+  height: 100%; border-radius: 2px; width: 0;
+  transition: width 1.5s cubic-bezier(0.16,1,0.3,1);
+}
+.fill-gold { background: linear-gradient(to right, var(--gold-dim), var(--gold)); }
+.fill-green { background: linear-gradient(to right, #2E6B4A, var(--green)); }
+
+/* ─── CTA ────────────────────────────────────────────── */
+.cta-section {
+  text-align: center; padding: 110px 60px;
+  background: radial-gradient(ellipse at center, rgba(198,150,58,0.06) 0%, transparent 68%);
+}
+.cta-eyebrow {
+  font-family: var(--ff-mono); font-size: 0.65rem;
+  letter-spacing: 0.22em; text-transform: uppercase;
+  color: var(--gold); margin-bottom: 18px;
+}
+.cta-title {
+  font-family: var(--ff-disp);
+  font-size: clamp(1.9rem, 3.8vw, 3.4rem);
+  font-weight: 700; color: var(--white); line-height: 1.1;
+  margin-bottom: 18px; max-width: 600px;
+  margin-left: auto; margin-right: auto;
+}
+.cta-title em { font-style: italic; color: var(--gold); }
+.cta-sub {
+  color: var(--muted); font-weight: 300;
+  max-width: 400px; margin: 0 auto 44px; font-size: 0.95rem;
+}
+.cta-buttons { display: flex; gap: 14px; justify-content: center; flex-wrap: wrap; }
+.btn-primary {
+  display: inline-flex; align-items: center; gap: 8px;
+  padding: 13px 34px;
+  background: var(--gold); color: #0F0F0F;
+  font-family: var(--ff-mono); font-size: 0.7rem;
+  font-weight: 700; letter-spacing: 0.14em; text-transform: uppercase;
+  border-radius: 2px; transition: background 0.22s, transform 0.18s;
+}
+.btn-primary:hover { background: #D4A742; transform: translateY(-2px); }
+.btn-secondary {
+  display: inline-flex; align-items: center; gap: 8px;
+  padding: 13px 34px; background: transparent;
+  border: 1px solid var(--border); color: var(--muted);
+  font-family: var(--ff-mono); font-size: 0.7rem;
+  letter-spacing: 0.14em; text-transform: uppercase;
+  border-radius: 2px; transition: all 0.22s;
+}
+.btn-secondary:hover { border-color: var(--gold-dim); color: var(--gold); transform: translateY(-2px); }
+
+/* ─── FOOTER ─────────────────────────────────────────── */
+footer {
+  border-top: 1px solid var(--border);
+  padding: 32px 60px;
+  display: flex; align-items: center; justify-content: space-between;
+}
+.footer-logo {
+  font-family: var(--ff-disp); font-size: 1.05rem;
+  font-weight: 700; color: var(--white);
+}
+.footer-logo span { color: var(--gold); }
+.footer-copy {
+  font-family: var(--ff-mono); font-size: 0.58rem;
+  letter-spacing: 0.12em; color: var(--muted);
+}
+.footer-links { display: flex; gap: 26px; }
+.footer-links a {
+  font-family: var(--ff-mono); font-size: 0.6rem;
+  letter-spacing: 0.12em; text-transform: uppercase;
+  color: var(--muted); transition: color 0.2s;
+}
+.footer-links a:hover { color: var(--gold); }
+
+/* ─── RESPONSIVE ─────────────────────────────────────── */
+@media (max-width: 960px) {
+  nav { padding: 18px 28px; }
+  .nav-links { display: none; }
+  .section { padding: 65px 28px; }
+  .hero { padding: 0 28px 60px; }
+  .hero-scroll { display: none; }
+  .identity-strip { grid-template-columns: 1fr; }
+  .identity-half:first-child { border-right: none; border-bottom: 1px solid var(--border); }
+  .identity-half { padding: 36px 28px; }
+  .gallery { grid-template-columns: repeat(2,1fr); grid-auto-rows: 200px; }
+  .g-wide,.g-med,.g-slim { grid-column: span 2; }
+  .g-tall { grid-row: span 1; }
+  .asset-grid { grid-template-columns: repeat(2,1fr); }
+  .specs-row { flex-wrap: wrap; }
+  .spec-cell { border-right: none; border-bottom: 1px solid var(--border); min-width: 50%; }
+  .about-grid { grid-template-columns: 1fr; gap: 48px; }
+  footer { flex-direction: column; gap: 14px; text-align: center; padding: 26px; }
+  .section-header { flex-direction: column; gap: 6px; }
+}
+@media (max-width: 540px) {
+  .gallery { grid-template-columns: 1fr; }
+  .g-wide,.g-med,.g-slim { grid-column: span 1; }
+  .asset-grid { grid-template-columns: 1fr; }
+  .stats-row { gap: 24px; }
+  .spec-cell { min-width: 100%; }
+}
+@media (prefers-reduced-motion: reduce) {
+  *,*::before,*::after { animation: none !important; transition: none !important; }
+}
+
+/* ─── LIGHTBOX ───────────────────────────────────────── */
+.lb-overlay {
+  display: none;
+  position: fixed; inset: 0; z-index: 999;
+  background: rgba(5,5,5,0.92);
+  backdrop-filter: blur(10px);
+  align-items: center; justify-content: center;
+  padding: 24px;
+  cursor: zoom-out;
+}
+.lb-overlay.open {
+  display: flex;
+  animation: lbFadeIn 0.28s ease;
+}
+@keyframes lbFadeIn {
+  from { opacity: 0; }
+  to   { opacity: 1; }
+}
+.lb-box {
+  position: relative;
+  max-width: min(92vw, 1200px);
+  max-height: 90vh;
+  cursor: default;
+  animation: lbScaleIn 0.3s cubic-bezier(0.16,1,0.3,1);
+}
+@keyframes lbScaleIn {
+  from { transform: scale(0.88); opacity: 0; }
+  to   { transform: scale(1);    opacity: 1; }
+}
+.lb-box img {
+  width: auto; height: auto;
+  max-width: min(92vw, 1200px);
+  max-height: 82vh;
+  object-fit: contain;
+  border-radius: 3px;
+  box-shadow: 0 32px 80px rgba(0,0,0,0.7);
+  display: block;
+}
+.lb-caption {
+  margin-top: 14px;
+  display: flex; align-items: center; justify-content: space-between;
+}
+.lb-caption-text {
+  font-family: var(--ff-disp); font-size: 1rem;
+  font-weight: 600; color: var(--white);
+}
+.lb-caption-cat {
+  font-family: var(--ff-mono); font-size: 0.6rem;
+  letter-spacing: 0.16em; text-transform: uppercase;
+  color: var(--gold); margin-bottom: 4px;
+}
+.lb-close {
+  position: absolute; top: -14px; right: -14px;
+  width: 36px; height: 36px;
+  background: var(--surface-2);
+  border: 1px solid var(--border);
+  border-radius: 50%;
+  display: flex; align-items: center; justify-content: center;
+  cursor: pointer; color: var(--muted);
+  font-size: 1rem; line-height: 1;
+  transition: color 0.2s, border-color 0.2s;
+  z-index: 2;
+}
+.lb-close:hover { color: var(--white); border-color: var(--gold); }
+.lb-nav {
+  position: absolute; top: 50%; transform: translateY(-50%);
+  width: 42px; height: 42px;
+  background: rgba(20,20,20,0.75);
+  border: 1px solid var(--border);
+  border-radius: 50%;
+  display: flex; align-items: center; justify-content: center;
+  cursor: pointer; color: var(--muted);
+  font-size: 1rem;
+  transition: color 0.2s, border-color 0.2s, background 0.2s;
+  z-index: 2;
+}
+.lb-nav:hover { color: var(--white); border-color: var(--gold); background: rgba(40,40,40,0.9); }
+.lb-prev { left: -56px; }
+.lb-next { right: -56px; }
+.lb-counter {
+  font-family: var(--ff-mono); font-size: 0.62rem;
+  letter-spacing: 0.12em; color: var(--muted);
+}
+/* Make cards show a zoom cursor */
+.card, .asset-card { cursor: zoom-in; }
+</style>
+</head>
+<body>
+
+<!-- ── NAV ───────────────────────────────────────────────────── -->
+<nav id="mainNav">
+  <a class="nav-logo" href="#"><span>H</span>ORLAR STUDIO</a>
+  <ul class="nav-links">
+    <li><a href="#renders">Interior Renders</a></li>
+    <li><a href="#gameassets">Game Assets</a></li>
+    <li><a href="#stagedesign">Stage Design</a></li>
+    <li><a href="#about">About</a></li>
+    <li><a href="#contact">Contact</a></li>
+  </ul>
+</nav>
+
+<!-- ── HERO ──────────────────────────────────────────────────── -->
+<header class="hero">
+  <div class="hero-bg"></div>
+  <div class="hero-overlay"></div>
+  <div class="hero-line"></div>
+  <div class="hero-content">
+    <p class="hero-eyebrow">3D Visualization Studio</p>
+    <h1 class="hero-title">
+      Two worlds.<br>One <em>studio.</em>
+    </h1>
+    <div class="hero-pills">
+      <span class="hero-pill pill-gold">Photorealistic Interior Renders</span>
+      <span class="hero-pill pill-green">Low-Poly Game Assets</span>
+    </div>
+    <p class="hero-sub">
+      From cinematic architectural visualization to optimized game-ready 3D models — built for clients who demand quality at every polygon.
+    </p>
+  </div>
+  <div class="hero-scroll">
+    <span>Scroll</span>
+    <div class="hero-scroll-bar"></div>
+  </div>
+</header>
+
+<!-- ── IDENTITY STRIP ────────────────────────────────────────── -->
+<div class="identity-strip">
+  <div class="identity-half">
+    <div class="id-icon gold">◈</div>
+    <div>
+      <div class="id-title">Interior &amp; Architectural Visualization</div>
+      <p class="id-desc">Photorealistic renders of residential and commercial spaces — from master bedrooms to corporate boardrooms. Clients receive print-quality outputs they can use before a single wall goes up.</p>
+      <div class="id-tags">
+        <span class="id-tag tag-gold">Cycles Rendering</span>
+        <span class="id-tag tag-gold">HDRI Lighting</span>
+        <span class="id-tag tag-gold">Material Shading</span>
+        <span class="id-tag tag-gold">Exterior Arch</span>
+      </div>
+    </div>
+  </div>
+  <div class="identity-half">
+    <div class="id-icon green">◉</div>
+    <div>
+      <div class="id-title">Low-Poly Game Assets &amp; Environment Packs</div>
+      <p class="id-desc">Game-ready environments, vehicles, buildings, and props with clean topology, proper UV unwrapping, and optimized mesh. Delivered in FBX, OBJ, and BLEND — ready to drop into Unity, Unreal, or Godot.</p>
+      <div class="id-tags">
+        <span class="id-tag tag-green">FBX / OBJ / BLEND</span>
+        <span class="id-tag tag-green">UV Unwrapping</span>
+        <span class="id-tag tag-green">Clean Topology</span>
+        <span class="id-tag tag-green">Games / Mobile / VR</span>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ══ SECTION 1: INTERIOR RENDERS ══════════════════════════════ -->
+<section class="section" id="renders">
+  <div class="section-header">
+    <span class="section-label label-gold">Interior & Exterior Renders</span>
+    <h2 class="section-title">Architectural Visualization</h2>
+  </div>
+  <p class="section-desc">
+    Photorealistic Blender renders — bedrooms, living rooms, kitchens, school and corporate spaces, building exteriors, and landscapes. Every scene is lit and composed to feel like a real photograph.
+  </p>
+
+  <div class="filter-bar" id="filterBar1">
+    <button class="filter-btn active-gold" data-filter="all" data-group="1">All</button>
+    <button class="filter-btn" data-filter="residential" data-group="1">Residential</button>
+    <button class="filter-btn" data-filter="commercial" data-group="1">Commercial</button>
+    <button class="filter-btn" data-filter="exterior" data-group="1">Exterior</button>
+    <button class="filter-btn" data-filter="workspace" data-group="1">Workspace</button>
+    <button class="filter-btn" data-filter="landscape" data-group="1">Landscape</button>
+  </div>
+
+  <div class="gallery" id="gallery1">
+
+    <div class="card g-wide g-tall" data-category="exterior" data-group="1">
+      <img src="./images/Modern_House_With_Pool_01.jpg" alt="Modern house with pool exterior">
+      <div class="card-reveal">
+        <div class="card-cat cat-gold">Exterior · Architecture</div>
+        <div class="card-name">Modern House With Pool</div>
+      </div>
+    </div>
+
+    <div class="card g-slim g-tall" data-category="residential" data-group="1">
+      <img src="./images/Interior_Design_02_04.jpg" alt="Luxury living room">
+      <div class="card-reveal">
+        <div class="card-cat cat-gold">Residential · Living Room</div>
+        <div class="card-name">Luxury Lounge Interior</div>
+      </div>
+    </div>
+
+    <div class="card g-med" data-category="residential" data-group="1">
+      <img src="./images/Interior_Design_03_12.jpg" alt="Double height living room">
+      <div class="card-reveal">
+        <div class="card-cat cat-gold">Residential · Living Room</div>
+        <div class="card-name">Double-Height Living Space</div>
+      </div>
+    </div>
+
+    <div class="card g-med" data-category="residential" data-group="1">
+      <img src="./images/Interior_Design_03_11.jpg" alt="Evening open plan living room">
+      <div class="card-reveal">
+        <div class="card-cat cat-gold">Residential · Open Plan</div>
+        <div class="card-name">Evening Open-Plan Lounge</div>
+      </div>
+    </div>
+
+    <div class="card g-med" data-category="residential" data-group="1">
+      <img src="./images/Bedroom_Design_04.jpg" alt="Master bedroom">
+      <div class="card-reveal">
+        <div class="card-cat cat-gold">Residential · Bedroom</div>
+        <div class="card-name">Master Bedroom Suite</div>
+      </div>
+    </div>
+
+    <div class="card g-med" data-category="residential" data-group="1">
+      <img src="./images/Interior_Design_4_02.jpg" alt="Scandinavian kitchen">
+      <div class="card-reveal">
+        <div class="card-cat cat-gold">Residential · Kitchen</div>
+        <div class="card-name">Scandinavian Kitchen &amp; Dining</div>
+      </div>
+    </div>
+
+    <div class="card g-slim" data-category="workspace" data-group="1">
+      <img src="./images/Interior_Design_05_Final_Rander.jpg" alt="Home office">
+      <div class="card-reveal">
+        <div class="card-cat cat-gold">Workspace · Home Office</div>
+        <div class="card-name">Garden-View Study</div>
+      </div>
+    </div>
+
+    <div class="card g-med" data-category="commercial" data-group="1">
+      <img src="./images/Meeting Room Interior_02.jpg" alt="Corporate meeting room">
+      <div class="card-reveal">
+        <div class="card-cat cat-gold">Commercial · Office</div>
+        <div class="card-name">Executive Meeting Room</div>
+      </div>
+    </div>
+
+    <div class="card g-slim" data-category="commercial" data-group="1">
+      <img src="./images/Meeting Room Interior_03.jpg" alt="Boardroom second angle">
+      <div class="card-reveal">
+        <div class="card-cat cat-gold">Commercial · Office</div>
+        <div class="card-name">Boardroom — Alt View</div>
+      </div>
+    </div>
+
+    <div class="card g-med" data-category="residential" data-group="1">
+      <img src="./images/Modern_House_With_Pool_03.jpg" alt="Pool house interior">
+      <div class="card-reveal">
+        <div class="card-cat cat-gold">Residential · Living</div>
+        <div class="card-name">Pool House — Interior</div>
+      </div>
+    </div>
+
+    <div class="card g-med" data-category="residential" data-group="1">
+      <img src="./images/Modern_House_With_Pool_04.jpg" alt="Pool house close up">
+      <div class="card-reveal">
+        <div class="card-cat cat-gold">Residential · Living</div>
+        <div class="card-name">Pool House — Close-Up</div>
+      </div>
+    </div>
+
+    <!-- ── Landscape ── -->
+
+    <div class="card g-wide" data-category="landscape" data-group="1">
+      <img src="./images/Lake_Landscape_01.jpeg" alt="Lake park landscape render view 1" loading="lazy" decoding="async">
+      <div class="card-reveal">
+        <div class="card-cat cat-gold">Landscape · Lake Park</div>
+        <div class="card-name">Lake Park Landscape — View 1</div>
+      </div>
+    </div>
+
+    <div class="card g-slim" data-category="landscape" data-group="1">
+      <img src="./images/Lake_Landscape_02.jpeg" alt="Lake park landscape render view 2" loading="lazy" decoding="async">
+      <div class="card-reveal">
+        <div class="card-cat cat-gold">Landscape · Lake Park</div>
+        <div class="card-name">Lake Park Landscape — View 2</div>
+      </div>
+    </div>
+
+    <div class="card g-wide" style="grid-column: span 12;" data-category="landscape" data-group="1">
+      <img src="./images/Lake_Landscape_03.jpeg" alt="Lake park landscape render view 3" loading="lazy" decoding="async">
+      <div class="card-reveal">
+        <div class="card-cat cat-gold">Landscape · Lake Park</div>
+        <div class="card-name">Lake Park Landscape — View 3</div>
+      </div>
+    </div>
+
+    <div class="card g-wide" data-category="landscape" data-group="1">
+      <img src="./images/Playland_Building_Landscape_01.jpeg" alt="Playland building landscape render view 1" loading="lazy" decoding="async">
+      <div class="card-reveal">
+        <div class="card-cat cat-gold">Landscape · Playland</div>
+        <div class="card-name">Playland Landscape — View 1</div>
+      </div>
+    </div>
+
+    <div class="card g-slim" data-category="landscape" data-group="1">
+      <img src="./images/Playland_Building_Landscape_02.jpeg" alt="Playland building landscape render view 2" loading="lazy" decoding="async">
+      <div class="card-reveal">
+        <div class="card-cat cat-gold">Landscape · Playland</div>
+        <div class="card-name">Playland Landscape — View 2</div>
+      </div>
+    </div>
+
+    <div class="card g-slim" data-category="landscape" data-group="1">
+      <img src="./images/Playland_Building_Landscape_03.jpeg" alt="Playland building landscape render view 3" loading="lazy" decoding="async">
+      <div class="card-reveal">
+        <div class="card-cat cat-gold">Landscape · Playland</div>
+        <div class="card-name">Playland Landscape — View 3</div>
+      </div>
+    </div>
+
+    <div class="card g-slim" data-category="landscape" data-group="1">
+      <img src="./images/Playland_Building_Landscape_04.jpeg" alt="Playland building landscape render view 4" loading="lazy" decoding="async">
+      <div class="card-reveal">
+        <div class="card-cat cat-gold">Landscape · Playland</div>
+        <div class="card-name">Playland Landscape — View 4</div>
+      </div>
+    </div>
+
+    <div class="card g-slim" data-category="landscape" data-group="1">
+      <img src="./images/Playland_Building_Landscape_05.jpeg" alt="Playland building landscape render view 5" loading="lazy" decoding="async">
+      <div class="card-reveal">
+        <div class="card-cat cat-gold">Landscape · Playland</div>
+        <div class="card-name">Playland Landscape — View 5</div>
+      </div>
+    </div>
+
+    <div class="card g-med" data-category="landscape" data-group="1">
+      <img src="./images/Playland_Building_Landscape_06.jpeg" alt="Playland building landscape render view 6" loading="lazy" decoding="async">
+      <div class="card-reveal">
+        <div class="card-cat cat-gold">Landscape · Playland</div>
+        <div class="card-name">Playland Landscape — View 6</div>
+      </div>
+    </div>
+
+    <div class="card g-med" data-category="landscape" data-group="1">
+      <img src="./images/Playland_Building_Landscape_07.jpeg" alt="Playland building landscape render view 7" loading="lazy" decoding="async">
+      <div class="card-reveal">
+        <div class="card-cat cat-gold">Landscape · Playland</div>
+        <div class="card-name">Playland Landscape — View 7</div>
+      </div>
+    </div>
+
+    <div class="card g-slim" data-category="landscape" data-group="1">
+      <img src="./images/Playland_Building_Landscape_08.jpeg" alt="Playland building landscape render view 8" loading="lazy" decoding="async">
+      <div class="card-reveal">
+        <div class="card-cat cat-gold">Landscape · Playland</div>
+        <div class="card-name">Playland Landscape — View 8</div>
+      </div>
+    </div>
+
+    <div class="card g-wide" data-category="landscape" data-group="1">
+      <img src="./images/Playland_Building_Landscape_09.jpeg" alt="Playland building landscape render view 9" loading="lazy" decoding="async">
+      <div class="card-reveal">
+        <div class="card-cat cat-gold">Landscape · Playland</div>
+        <div class="card-name">Playland Landscape — View 9</div>
+      </div>
+    </div>
+
+    <!-- ── School Interior ── -->
+
+    <div class="card g-wide" data-category="commercial" data-group="1">
+      <img src="./images/School_Interior_02.jpeg" alt="School interior render view 2" loading="lazy" decoding="async">
+      <div class="card-reveal">
+        <div class="card-cat cat-gold">Commercial · School Interior</div>
+        <div class="card-name">School Interior — View 2</div>
+      </div>
+    </div>
+
+    <div class="card g-slim" data-category="commercial" data-group="1">
+      <img src="./images/School_Interior_03.jpeg" alt="School interior render view 3" loading="lazy" decoding="async">
+      <div class="card-reveal">
+        <div class="card-cat cat-gold">Commercial · School Interior</div>
+        <div class="card-name">School Interior — View 3</div>
+      </div>
+    </div>
+
+    <div class="card g-slim" data-category="commercial" data-group="1">
+      <img src="./images/School_Interior_04.jpeg" alt="School interior render view 4" loading="lazy" decoding="async">
+      <div class="card-reveal">
+        <div class="card-cat cat-gold">Commercial · School Interior</div>
+        <div class="card-name">School Interior — View 4</div>
+      </div>
+    </div>
+
+    <div class="card g-slim" data-category="commercial" data-group="1">
+      <img src="./images/School_Interior_05.jpeg" alt="School interior render view 5" loading="lazy" decoding="async">
+      <div class="card-reveal">
+        <div class="card-cat cat-gold">Commercial · School Interior</div>
+        <div class="card-name">School Interior — View 5</div>
+      </div>
+    </div>
+
+    <div class="card g-slim" data-category="commercial" data-group="1">
+      <img src="./images/School_Interior_06.jpeg" alt="School interior render view 6" loading="lazy" decoding="async">
+      <div class="card-reveal">
+        <div class="card-cat cat-gold">Commercial · School Interior</div>
+        <div class="card-name">School Interior — View 6</div>
+      </div>
+    </div>
+
+    <div class="card g-med" data-category="commercial" data-group="1">
+      <img src="./images/School_Interior_07.jpeg" alt="School interior render view 7" loading="lazy" decoding="async">
+      <div class="card-reveal">
+        <div class="card-cat cat-gold">Commercial · School Interior</div>
+        <div class="card-name">School Interior — View 7</div>
+      </div>
+    </div>
+
+    <div class="card g-med" data-category="commercial" data-group="1">
+      <img src="./images/School_Interior_08.jpeg" alt="School interior render view 8" loading="lazy" decoding="async">
+      <div class="card-reveal">
+        <div class="card-cat cat-gold">Commercial · School Interior</div>
+        <div class="card-name">School Interior — View 8</div>
+      </div>
+    </div>
+
+    <div class="card g-slim" data-category="commercial" data-group="1">
+      <img src="./images/School_Interior_09.jpeg" alt="School interior render view 9" loading="lazy" decoding="async">
+      <div class="card-reveal">
+        <div class="card-cat cat-gold">Commercial · School Interior</div>
+        <div class="card-name">School Interior — View 9</div>
+      </div>
+    </div>
+
+    <div class="card g-wide" data-category="commercial" data-group="1">
+      <img src="./images/School_Interior_10.jpeg" alt="School interior render view 10" loading="lazy" decoding="async">
+      <div class="card-reveal">
+        <div class="card-cat cat-gold">Commercial · School Interior</div>
+        <div class="card-name">School Interior — View 10</div>
+      </div>
+    </div>
+
+    <div class="card g-slim" data-category="commercial" data-group="1">
+      <img src="./images/School_Interior_11.jpeg" alt="School interior render view 11" loading="lazy" decoding="async">
+      <div class="card-reveal">
+        <div class="card-cat cat-gold">Commercial · School Interior</div>
+        <div class="card-name">School Interior — View 11</div>
+      </div>
+    </div>
+
+    <div class="card g-slim" data-category="commercial" data-group="1">
+      <img src="./images/School_Interior_12.jpeg" alt="School interior render view 12" loading="lazy" decoding="async">
+      <div class="card-reveal">
+        <div class="card-cat cat-gold">Commercial · School Interior</div>
+        <div class="card-name">School Interior — View 12</div>
+      </div>
+    </div>
+
+    <div class="card g-slim" data-category="commercial" data-group="1">
+      <img src="./images/School_Interior_13.jpeg" alt="School interior render view 13" loading="lazy" decoding="async">
+      <div class="card-reveal">
+        <div class="card-cat cat-gold">Commercial · School Interior</div>
+        <div class="card-name">School Interior — View 13</div>
+      </div>
+    </div>
+
+    <div class="card g-wide" data-category="commercial" data-group="1">
+      <img src="./images/School_Interior_14.jpeg" alt="School interior render view 14" loading="lazy" decoding="async">
+      <div class="card-reveal">
+        <div class="card-cat cat-gold">Commercial · School Interior</div>
+        <div class="card-name">School Interior — View 14</div>
+      </div>
+    </div>
+
+    <div class="card g-slim" data-category="commercial" data-group="1">
+      <img src="./images/School_Interior_15.jpeg" alt="School interior render view 15" loading="lazy" decoding="async">
+      <div class="card-reveal">
+        <div class="card-cat cat-gold">Commercial · School Interior</div>
+        <div class="card-name">School Interior — View 15</div>
+      </div>
+    </div>
+
+    <div class="card g-slim" data-category="commercial" data-group="1">
+      <img src="./images/School_Interior_16.jpeg" alt="School interior render view 16" loading="lazy" decoding="async">
+      <div class="card-reveal">
+        <div class="card-cat cat-gold">Commercial · School Interior</div>
+        <div class="card-name">School Interior — View 16</div>
+      </div>
+    </div>
+
+    <div class="card g-slim" data-category="commercial" data-group="1">
+      <img src="./images/School_Interior_17.jpeg" alt="School interior render view 17" loading="lazy" decoding="async">
+      <div class="card-reveal">
+        <div class="card-cat cat-gold">Commercial · School Interior</div>
+        <div class="card-name">School Interior — View 17</div>
+      </div>
+    </div>
+
+    <div class="card g-slim" data-category="commercial" data-group="1">
+      <img src="./images/School_Interior_18.jpeg" alt="School interior render view 18" loading="lazy" decoding="async">
+      <div class="card-reveal">
+        <div class="card-cat cat-gold">Commercial · School Interior</div>
+        <div class="card-name">School Interior — View 18</div>
+      </div>
+    </div>
+
+    <div class="card g-med" data-category="commercial" data-group="1">
+      <img src="./images/School_Interior_19.jpeg" alt="School interior render view 19" loading="lazy" decoding="async">
+      <div class="card-reveal">
+        <div class="card-cat cat-gold">Commercial · School Interior</div>
+        <div class="card-name">School Interior — View 19</div>
+      </div>
+    </div>
+
+    <div class="card g-med" data-category="commercial" data-group="1">
+      <img src="./images/School_Interior_20.jpeg" alt="School interior render view 20" loading="lazy" decoding="async">
+      <div class="card-reveal">
+        <div class="card-cat cat-gold">Commercial · School Interior</div>
+        <div class="card-name">School Interior — View 20</div>
+      </div>
+    </div>
+
+    <div class="card g-slim" data-category="commercial" data-group="1">
+      <img src="./images/School_Interior_21.jpeg" alt="School interior render view 21" loading="lazy" decoding="async">
+      <div class="card-reveal">
+        <div class="card-cat cat-gold">Commercial · School Interior</div>
+        <div class="card-name">School Interior — View 21</div>
+      </div>
+    </div>
+
+    <div class="card g-wide" data-category="commercial" data-group="1">
+      <img src="./images/School_Interior_22.jpeg" alt="School interior render view 22" loading="lazy" decoding="async">
+      <div class="card-reveal">
+        <div class="card-cat cat-gold">Commercial · School Interior</div>
+        <div class="card-name">School Interior — View 22</div>
+      </div>
+    </div>
+
+    <!-- ── Building Exteriors ── -->
+
+    <div class="card g-wide" data-category="exterior" data-group="1">
+      <img src="./images/Building_01_01.jpeg" alt="Building 01 exterior render view 1" loading="lazy" decoding="async">
+      <div class="card-reveal">
+        <div class="card-cat cat-gold">Exterior · Building</div>
+        <div class="card-name">Building 01 Exterior — View 1</div>
+      </div>
+    </div>
+
+    <div class="card g-slim" data-category="exterior" data-group="1">
+      <img src="./images/Building_01_02.jpeg" alt="Building 01 exterior render view 2" loading="lazy" decoding="async">
+      <div class="card-reveal">
+        <div class="card-cat cat-gold">Exterior · Building</div>
+        <div class="card-name">Building 01 Exterior — View 2</div>
+      </div>
+    </div>
+
+    <div class="card g-slim" data-category="exterior" data-group="1">
+      <img src="./images/Building_01_03.jpeg" alt="Building 01 exterior render view 3" loading="lazy" decoding="async">
+      <div class="card-reveal">
+        <div class="card-cat cat-gold">Exterior · Building</div>
+        <div class="card-name">Building 01 Exterior — View 3</div>
+      </div>
+    </div>
+
+    <div class="card g-slim" data-category="exterior" data-group="1">
+      <img src="./images/Building_01_04.jpeg" alt="Building 01 exterior render view 4" loading="lazy" decoding="async">
+      <div class="card-reveal">
+        <div class="card-cat cat-gold">Exterior · Building</div>
+        <div class="card-name">Building 01 Exterior — View 4</div>
+      </div>
+    </div>
+
+    <div class="card g-slim" data-category="exterior" data-group="1">
+      <img src="./images/Building_01_05.jpeg" alt="Building 01 exterior render view 5" loading="lazy" decoding="async">
+      <div class="card-reveal">
+        <div class="card-cat cat-gold">Exterior · Building</div>
+        <div class="card-name">Building 01 Exterior — View 5</div>
+      </div>
+    </div>
+
+    <div class="card g-wide" data-category="exterior" data-group="1">
+      <img src="./images/Building_02_01.jpeg" alt="Building 02 exterior render view 1" loading="lazy" decoding="async">
+      <div class="card-reveal">
+        <div class="card-cat cat-gold">Exterior · Building</div>
+        <div class="card-name">Building 02 Exterior — View 1</div>
+      </div>
+    </div>
+
+    <div class="card g-slim" data-category="exterior" data-group="1">
+      <img src="./images/Building_02_02.jpeg" alt="Building 02 exterior render view 2" loading="lazy" decoding="async">
+      <div class="card-reveal">
+        <div class="card-cat cat-gold">Exterior · Building</div>
+        <div class="card-name">Building 02 Exterior — View 2</div>
+      </div>
+    </div>
+
+    <div class="card g-slim" data-category="exterior" data-group="1">
+      <img src="./images/Building_02_03.jpeg" alt="Building 02 exterior render view 3" loading="lazy" decoding="async">
+      <div class="card-reveal">
+        <div class="card-cat cat-gold">Exterior · Building</div>
+        <div class="card-name">Building 02 Exterior — View 3</div>
+      </div>
+    </div>
+
+    <div class="card g-slim" data-category="exterior" data-group="1">
+      <img src="./images/Building_02_04.jpeg" alt="Building 02 exterior render view 4" loading="lazy" decoding="async">
+      <div class="card-reveal">
+        <div class="card-cat cat-gold">Exterior · Building</div>
+        <div class="card-name">Building 02 Exterior — View 4</div>
+      </div>
+    </div>
+
+    <div class="card g-slim" data-category="exterior" data-group="1">
+      <img src="./images/Building_02_05.jpeg" alt="Building 02 exterior render view 5" loading="lazy" decoding="async">
+      <div class="card-reveal">
+        <div class="card-cat cat-gold">Exterior · Building</div>
+        <div class="card-name">Building 02 Exterior — View 5</div>
+      </div>
+    </div>
+
+    <div class="card g-med" data-category="exterior" data-group="1">
+      <img src="./images/Building_02_06.jpeg" alt="Building 02 exterior render view 6" loading="lazy" decoding="async">
+      <div class="card-reveal">
+        <div class="card-cat cat-gold">Exterior · Building</div>
+        <div class="card-name">Building 02 Exterior — View 6</div>
+      </div>
+    </div>
+
+    <div class="card g-med" data-category="exterior" data-group="1">
+      <img src="./images/Building_02_07.jpeg" alt="Building 02 exterior render view 7" loading="lazy" decoding="async">
+      <div class="card-reveal">
+        <div class="card-cat cat-gold">Exterior · Building</div>
+        <div class="card-name">Building 02 Exterior — View 7</div>
+      </div>
+    </div>
+
+    <div class="card g-slim" data-category="exterior" data-group="1">
+      <img src="./images/Building_02_08.jpeg" alt="Building 02 exterior render view 8" loading="lazy" decoding="async">
+      <div class="card-reveal">
+        <div class="card-cat cat-gold">Exterior · Building</div>
+        <div class="card-name">Building 02 Exterior — View 8</div>
+      </div>
+    </div>
+
+    <div class="card g-wide" data-category="exterior" data-group="1">
+      <img src="./images/Building_02_09.jpeg" alt="Building 02 exterior render view 9" loading="lazy" decoding="async">
+      <div class="card-reveal">
+        <div class="card-cat cat-gold">Exterior · Building</div>
+        <div class="card-name">Building 02 Exterior — View 9</div>
+      </div>
+    </div>
+
+    <div class="card g-wide" style="grid-column: span 12;" data-category="exterior" data-group="1">
+      <img src="./images/Building_02_10.jpeg" alt="Building 02 exterior render view 10" loading="lazy" decoding="async">
+      <div class="card-reveal">
+        <div class="card-cat cat-gold">Exterior · Building</div>
+        <div class="card-name">Building 02 Exterior — View 10</div>
+      </div>
+    </div>
+
+    <!-- ── Car Parking ── -->
+
+    <div class="card g-wide" data-category="exterior" data-group="1">
+      <img src="./images/Car_parking_Area_01.jpeg" alt="Car parking area exterior render view 1" loading="lazy" decoding="async">
+      <div class="card-reveal">
+        <div class="card-cat cat-gold">Exterior · Car Parking</div>
+        <div class="card-name">Car Parking Area — View 1</div>
+      </div>
+    </div>
+
+    <div class="card g-slim" data-category="exterior" data-group="1">
+      <img src="./images/Car_parking_Area_02.jpeg" alt="Car parking area exterior render view 2" loading="lazy" decoding="async">
+      <div class="card-reveal">
+        <div class="card-cat cat-gold">Exterior · Car Parking</div>
+        <div class="card-name">Car Parking Area — View 2</div>
+      </div>
+    </div>
+
+    <div class="card g-med" data-category="exterior" data-group="1">
+      <img src="./images/Car_parking_Area_03.jpeg" alt="Car parking area exterior render view 3" loading="lazy" decoding="async">
+      <div class="card-reveal">
+        <div class="card-cat cat-gold">Exterior · Car Parking</div>
+        <div class="card-name">Car Parking Area — View 3</div>
+      </div>
+    </div>
+
+    <div class="card g-med" data-category="exterior" data-group="1">
+      <img src="./images/Car_parking_Area_04.jpeg" alt="Car parking area exterior render view 4" loading="lazy" decoding="async">
+      <div class="card-reveal">
+        <div class="card-cat cat-gold">Exterior · Car Parking</div>
+        <div class="card-name">Car Parking Area — View 4</div>
+      </div>
+    </div>
+
+
+  </div>
+</section>
+
+<!-- ══ SECTION 2: GAME ASSETS ════════════════════════════════════ -->
+<section class="section game-section" id="gameassets">
+  <div class="section-header">
+    <span class="section-label label-green">Low-Poly · Game-Ready</span>
+    <h2 class="section-title">3D Game Asset Packs</h2>
+  </div>
+  <p class="section-desc">
+    Custom-modeled, performance-optimized 3D assets for games, mobile, and VR. Clean geometry, proper UV unwrapping, and game-engine-ready formats. These are practice models — your project gets fully custom assets built to spec.
+  </p>
+
+  <!-- Tech specs bar -->
+  <div class="specs-row">
+    <div class="spec-cell">
+      <div class="spec-key">Software</div>
+      <div class="spec-val">Blender</div>
+    </div>
+    <div class="spec-cell">
+      <div class="spec-key">Style</div>
+      <div class="spec-val">Low-Poly</div>
+    </div>
+    <div class="spec-cell">
+      <div class="spec-key">Formats</div>
+      <div class="spec-val">FBX · OBJ · BLEND</div>
+    </div>
+    <div class="spec-cell">
+      <div class="spec-key">Use Case</div>
+      <div class="spec-val">Games · Mobile · VR</div>
+    </div>
+    <div class="spec-cell">
+      <div class="spec-key">Features</div>
+      <div class="spec-val">UV Unwrap · Clean Topo</div>
+    </div>
+    <div class="spec-cell">
+      <div class="spec-key">Delivery</div>
+      <div class="spec-val">Fast · Revision-Ready</div>
+    </div>
+  </div>
+
+  <!-- Asset category filter -->
+  <div class="filter-bar" id="filterBar2">
+    <button class="filter-btn active-green" data-filter="all" data-group="2">All Assets</button>
+    <button class="filter-btn" data-filter="environment" data-group="2">Environments</button>
+    <button class="filter-btn" data-filter="vehicles" data-group="2">Vehicles</button>
+    <button class="filter-btn" data-filter="buildings" data-group="2">Buildings</button>
+    <button class="filter-btn" data-filter="props" data-group="2">Props</button>
+  </div>
+
+  <div class="asset-grid" id="gallery2">
+
+    <!-- Airport city pack -->
+    <div class="asset-card" style="grid-column: span 2;" data-category="environment" data-group="2">
+      <img src="./images/Lowpoly_Airport_01.jpg" alt="Low-poly airport environment pack">
+      <div class="card-reveal">
+        <div class="card-cat cat-green">Environment Pack</div>
+        <div class="card-name">Low-Poly Airport City Pack</div>
+      </div>
+    </div>
+
+    <!-- Airport roads -->
+    <div class="asset-card" data-category="environment" data-group="2">
+      <img src="./images/Lowpoly_Airport_02.jpg" alt="Airport road and parking">
+      <div class="card-reveal">
+        <div class="card-cat cat-green">Environment · Airport</div>
+        <div class="card-name">Airport Roads & Parking</div>
+      </div>
+    </div>
+
+    <!-- Airport terminal -->
+    <div class="asset-card" data-category="environment" data-group="2">
+      <img src="./images/Lowpoly_Airport_03.jpg" alt="Airport terminal view">
+      <div class="card-reveal">
+        <div class="card-cat cat-green">Environment · Airport</div>
+        <div class="card-name">Airport Terminal View</div>
+      </div>
+    </div>
+
+    <!-- Airport runway -->
+    <div class="asset-card" data-category="environment" data-group="2">
+      <img src="./images/Lowpoly_Airport_04.jpg" alt="Airport runway layout">
+      <div class="card-reveal">
+        <div class="card-cat cat-green">Environment · Airport</div>
+        <div class="card-name">Airport Runway Layout</div>
+      </div>
+    </div>
+
+    <!-- Airport tower -->
+    <div class="asset-card" data-category="environment" data-group="2">
+      <img src="./images/Lowpoly_Airport_05.jpg" alt="Airport control tower">
+      <div class="card-reveal">
+        <div class="card-cat cat-green">Environment · Airport</div>
+        <div class="card-name">Airport Control Tower</div>
+      </div>
+    </div>
+
+    <!-- Airport hangar -->
+    <div class="asset-card" data-category="environment" data-group="2">
+      <img src="./images/Lowpoly_Airport_06.jpg" alt="Airport hangar area">
+      <div class="card-reveal">
+        <div class="card-cat cat-green">Environment · Airport</div>
+        <div class="card-name">Airport Hangar Area</div>
+      </div>
+    </div>
+
+    <!-- Road pack -->
+    <div class="asset-card" data-category="environment" data-group="2">
+      <img src="./images/Town_Road_01.jpg" alt="Modular road pack">
+      <div class="card-reveal">
+        <div class="card-cat cat-green">Environment · Roads</div>
+        <div class="card-name">Modular Road Pack</div>
+      </div>
+    </div>
+
+    <!-- Road intersection -->
+    <div class="asset-card" data-category="environment" data-group="2">
+      <img src="./images/Town_Road_02.jpg" alt="Road intersection pack">
+      <div class="card-reveal">
+        <div class="card-cat cat-green">Environment · Roads</div>
+        <div class="card-name">Road Intersection Pack</div>
+      </div>
+    </div>
+
+    <!-- Bridges -->
+    <div class="asset-card" data-category="environment" data-group="2">
+      <img src="./images/Lowpoly_Bridges_Pack_01.jpg" alt="Modular bridge pack">
+      <div class="card-reveal">
+        <div class="card-cat cat-green">Environment · Infrastructure</div>
+        <div class="card-name">Modular Bridge Pack</div>
+      </div>
+    </div>
+
+    <!-- Bridges suspension -->
+    <div class="asset-card" data-category="environment" data-group="2">
+      <img src="./images/Lowpoly_Bridges_Pack_02.jpg" alt="Suspension bridge module">
+      <div class="card-reveal">
+        <div class="card-cat cat-green">Environment · Infrastructure</div>
+        <div class="card-name">Suspension Bridge Module</div>
+      </div>
+    </div>
+
+    <!-- Bridges overpass -->
+    <div class="asset-card" data-category="environment" data-group="2">
+      <img src="./images/Lowpoly_Bridges_Pack_03.jpg" alt="Overpass bridge module">
+      <div class="card-reveal">
+        <div class="card-cat cat-green">Environment · Infrastructure</div>
+        <div class="card-name">Overpass Bridge Module</div>
+      </div>
+    </div>
+
+    <!-- Bridges truss -->
+    <div class="asset-card" data-category="environment" data-group="2">
+      <img src="./images/Lowpoly_Bridges_Pack_04.jpg" alt="Truss bridge module">
+      <div class="card-reveal">
+        <div class="card-cat cat-green">Environment · Infrastructure</div>
+        <div class="card-name">Truss Bridge Module</div>
+      </div>
+    </div>
+
+    <!-- Trees -->
+    <div class="asset-card" data-category="environment" data-group="2">
+      <img src="./images/Lowpoly_Trees_01.jpg" alt="Low-poly tree pack">
+      <div class="card-reveal">
+        <div class="card-cat cat-green">Environment · Vegetation</div>
+        <div class="card-name">Low-Poly Tree Pack</div>
+      </div>
+    </div>
+
+    <!-- Vehicles wide -->
+    <div class="asset-card" style="grid-column: span 2;" data-category="vehicles" data-group="2">
+      <img src="./images/Lowpoly_Vehicles_01.jpg" alt="Low-poly vehicles pack">
+      <div class="card-reveal">
+        <div class="card-cat cat-green">Vehicles & Traffic</div>
+        <div class="card-name">Low-Poly Vehicle Pack — 12 Models</div>
+      </div>
+    </div>
+
+    <!-- Vehicles sedan -->
+    <div class="asset-card" data-category="vehicles" data-group="2">
+      <img src="./images/Lowpoly_Vehicles_02.jpg" alt="Sedan and hatchback set">
+      <div class="card-reveal">
+        <div class="card-cat cat-green">Vehicles · Cars</div>
+        <div class="card-name">Sedan & Hatchback Set</div>
+      </div>
+    </div>
+
+    <!-- Vehicles truck -->
+    <div class="asset-card" data-category="vehicles" data-group="2">
+      <img src="./images/Lowpoly_Vehicles_03.jpg" alt="Truck and van set">
+      <div class="card-reveal">
+        <div class="card-cat cat-green">Vehicles · Utility</div>
+        <div class="card-name">Truck & Van Set</div>
+      </div>
+    </div>
+
+    <!-- Vehicles emergency -->
+    <div class="asset-card" data-category="vehicles" data-group="2">
+      <img src="./images/Lowpoly_Vehicles_04.jpg" alt="Emergency vehicle set">
+      <div class="card-reveal">
+        <div class="card-cat cat-green">Vehicles · Emergency</div>
+        <div class="card-name">Emergency Vehicle Set</div>
+      </div>
+    </div>
+
+    <!-- Airplane 1 -->
+    <div class="asset-card" data-category="vehicles" data-group="2">
+      <img src="./images/Lowpoly_Airoplane_01.jpg" alt="Commercial airliner model">
+      <div class="card-reveal">
+        <div class="card-cat cat-green">Vehicles · Aircraft</div>
+        <div class="card-name">Commercial Airliner Model</div>
+      </div>
+    </div>
+
+    <!-- Airplane 2 -->
+    <div class="asset-card" data-category="vehicles" data-group="2">
+      <img src="./images/Lowpoly_Airoplane_02.jpg" alt="Airliner front view">
+      <div class="card-reveal">
+        <div class="card-cat cat-green">Vehicles · Aircraft</div>
+        <div class="card-name">Airliner — Front View</div>
+      </div>
+    </div>
+
+    <!-- Airplane 3 -->
+    <div class="asset-card" data-category="vehicles" data-group="2">
+      <img src="./images/Lowpoly_Airoplane_03.jpg" alt="Airliner side profile">
+      <div class="card-reveal">
+        <div class="card-cat cat-green">Vehicles · Aircraft</div>
+        <div class="card-name">Airliner — Side Profile</div>
+      </div>
+    </div>
+
+    <!-- Airplane 4 -->
+    <div class="asset-card" data-category="vehicles" data-group="2">
+      <img src="./images/Lowpoly_Airoplane_04.jpg" alt="Airliner rear view">
+      <div class="card-reveal">
+        <div class="card-cat cat-green">Vehicles · Aircraft</div>
+        <div class="card-name">Airliner — Rear View</div>
+      </div>
+    </div>
+
+    <!-- Traffic signals -->
+    <div class="asset-card" data-category="vehicles" data-group="2">
+      <img src="./images/Lowpoly_Traffic_Signal_01.jpg" alt="Traffic signal pack">
+      <div class="card-reveal">
+        <div class="card-cat cat-green">Vehicles · Traffic</div>
+        <div class="card-name">Traffic Signal System</div>
+      </div>
+    </div>
+
+    <!-- Traffic signal 2 -->
+    <div class="asset-card" data-category="vehicles" data-group="2">
+      <img src="./images/Lowpoly_Traffic_Signal_02.jpg" alt="Signal pole variant">
+      <div class="card-reveal">
+        <div class="card-cat cat-green">Vehicles · Traffic</div>
+        <div class="card-name">Signal Pole Variant</div>
+      </div>
+    </div>
+
+    <!-- Traffic signal 3 -->
+    <div class="asset-card" data-category="vehicles" data-group="2">
+      <img src="./images/Lowpoly_Traffic_Signal_03.jpg" alt="Pedestrian crossing signal">
+      <div class="card-reveal">
+        <div class="card-cat cat-green">Vehicles · Traffic</div>
+        <div class="card-name">Pedestrian Crossing Signal</div>
+      </div>
+    </div>
+
+    <!-- Traffic signal 4 -->
+    <div class="asset-card" data-category="vehicles" data-group="2">
+      <img src="./images/Lowpoly_Traffic_Signal_04.jpg" alt="Signal set angle two">
+      <div class="card-reveal">
+        <div class="card-cat cat-green">Vehicles · Traffic</div>
+        <div class="card-name">Signal Set — Angle 2</div>
+      </div>
+    </div>
+
+    <!-- Traffic signal 5 -->
+    <div class="asset-card" data-category="vehicles" data-group="2">
+      <img src="./images/Lowpoly_Traffic_Signal_05.jpg" alt="Signal set angle three">
+      <div class="card-reveal">
+        <div class="card-cat cat-green">Vehicles · Traffic</div>
+        <div class="card-name">Signal Set — Angle 3</div>
+      </div>
+    </div>
+
+    <!-- Traffic signal 6 -->
+    <div class="asset-card" data-category="vehicles" data-group="2">
+      <img src="./images/Lowpoly_Traffic_Signal_06.jpg" alt="Overhead signal rig">
+      <div class="card-reveal">
+        <div class="card-cat cat-green">Vehicles · Traffic</div>
+        <div class="card-name">Overhead Signal Rig</div>
+      </div>
+    </div>
+
+    <!-- Traffic signal 7 -->
+    <div class="asset-card" data-category="vehicles" data-group="2">
+      <img src="./images/Lowpoly_Traffic_Signal_07.jpg" alt="Signal set angle four">
+      <div class="card-reveal">
+        <div class="card-cat cat-green">Vehicles · Traffic</div>
+        <div class="card-name">Signal Set — Angle 4</div>
+      </div>
+    </div>
+
+    <!-- Traffic signal 8 -->
+    <div class="asset-card" data-category="vehicles" data-group="2">
+      <img src="./images/Lowpoly_Traffic_Signal_08.jpg" alt="Signal set angle five">
+      <div class="card-reveal">
+        <div class="card-cat cat-green">Vehicles · Traffic</div>
+        <div class="card-name">Signal Set — Angle 5</div>
+      </div>
+    </div>
+
+    <!-- Traffic signal 9 -->
+    <div class="asset-card" data-category="vehicles" data-group="2">
+      <img src="./images/Lowpoly_Traffic_Signal_09.jpg" alt="Signal set angle six">
+      <div class="card-reveal">
+        <div class="card-cat cat-green">Vehicles · Traffic</div>
+        <div class="card-name">Signal Set — Angle 6</div>
+      </div>
+    </div>
+
+    <!-- Traffic signal 10 -->
+    <div class="asset-card" data-category="vehicles" data-group="2">
+      <img src="./images/Lowpoly_Traffic_Signal_10.jpg" alt="Signal set final layout">
+      <div class="card-reveal">
+        <div class="card-cat cat-green">Vehicles · Traffic</div>
+        <div class="card-name">Signal Set — Final Layout</div>
+      </div>
+    </div>
+
+    <!-- Gas station -->
+    <div class="asset-card" style="grid-column: span 2;" data-category="buildings" data-group="2">
+      <img src="./images/Gass_Station_Pre_01.jpg" alt="Low-poly gas station">
+      <div class="card-reveal">
+        <div class="card-cat cat-green">Building · Commercial</div>
+        <div class="card-name">Gas Station Pack</div>
+      </div>
+    </div>
+
+    <!-- Gas station 2 -->
+    <div class="asset-card" data-category="buildings" data-group="2">
+      <img src="./images/Gass_Station_Pre_02.jpg" alt="Gas station canopy detail">
+      <div class="card-reveal">
+        <div class="card-cat cat-green">Building · Commercial</div>
+        <div class="card-name">Gas Station — Canopy Detail</div>
+      </div>
+    </div>
+
+    <!-- Gas station 3 -->
+    <div class="asset-card" data-category="buildings" data-group="2">
+      <img src="./images/Gass_Station_Pre_03.jpg" alt="Gas station pump island">
+      <div class="card-reveal">
+        <div class="card-cat cat-green">Building · Commercial</div>
+        <div class="card-name">Gas Station — Pump Island</div>
+      </div>
+    </div>
+
+    <!-- Gas station 4 -->
+    <div class="asset-card" data-category="buildings" data-group="2">
+      <img src="./images/Gass_Station_Pre_04.jpg" alt="Gas station signage">
+      <div class="card-reveal">
+        <div class="card-cat cat-green">Building · Commercial</div>
+        <div class="card-name">Gas Station — Signage</div>
+      </div>
+    </div>
+
+    <!-- Gas station 5 -->
+    <div class="asset-card" data-category="buildings" data-group="2">
+      <img src="./images/Gass_Station_Pre_05.jpg" alt="Gas station interior shop">
+      <div class="card-reveal">
+        <div class="card-cat cat-green">Building · Commercial</div>
+        <div class="card-name">Gas Station — Interior Shop</div>
+      </div>
+    </div>
+
+    <!-- Gas station 6 -->
+    <div class="asset-card" data-category="buildings" data-group="2">
+      <img src="./images/Gass_Station_Pre_06.jpg" alt="Gas station night lighting">
+      <div class="card-reveal">
+        <div class="card-cat cat-green">Building · Commercial</div>
+        <div class="card-name">Gas Station — Night Lighting</div>
+      </div>
+    </div>
+
+    <!-- Gas station 7 -->
+    <div class="asset-card" data-category="buildings" data-group="2">
+      <img src="./images/Gass_Station_Pre_07.jpg" alt="Gas station side view">
+      <div class="card-reveal">
+        <div class="card-cat cat-green">Building · Commercial</div>
+        <div class="card-name">Gas Station — Side View</div>
+      </div>
+    </div>
+
+    <!-- Gas station 8 -->
+    <div class="asset-card" data-category="buildings" data-group="2">
+      <img src="./images/Gass_Station_Pre_08.jpg" alt="Gas station rear view">
+      <div class="card-reveal">
+        <div class="card-cat cat-green">Building · Commercial</div>
+        <div class="card-name">Gas Station — Rear View</div>
+      </div>
+    </div>
+
+    <!-- Gas station 9 -->
+    <div class="asset-card" data-category="buildings" data-group="2">
+      <img src="./images/Gass_Station_Pre_09.jpg" alt="Gas station wide shot">
+      <div class="card-reveal">
+        <div class="card-cat cat-green">Building · Commercial</div>
+        <div class="card-name">Gas Station — Wide Shot</div>
+      </div>
+    </div>
+
+    <!-- Gas station 10 -->
+    <div class="asset-card" data-category="buildings" data-group="2">
+      <img src="./images/Gass_Station_Pre_10.jpg" alt="Gas station top down">
+      <div class="card-reveal">
+        <div class="card-cat cat-green">Building · Commercial</div>
+        <div class="card-name">Gas Station — Top-Down</div>
+      </div>
+    </div>
+
+    <!-- Gas station 11 -->
+    <div class="asset-card" data-category="buildings" data-group="2">
+      <img src="./images/Gass_Station_Pre_11.jpg" alt="Gas station detail shot">
+      <div class="card-reveal">
+        <div class="card-cat cat-green">Building · Commercial</div>
+        <div class="card-name">Gas Station — Detail Shot</div>
+      </div>
+    </div>
+
+    <!-- Gas station 12 -->
+    <div class="asset-card" data-category="buildings" data-group="2">
+      <img src="./images/Gass_Station_Pre_12.jpg" alt="Gas station full scene">
+      <div class="card-reveal">
+        <div class="card-cat cat-green">Building · Commercial</div>
+        <div class="card-name">Gas Station — Full Scene</div>
+      </div>
+    </div>
+
+    <!-- Gas station 13 -->
+    <div class="asset-card" data-category="buildings" data-group="2">
+      <img src="./images/Gass_Station_Pre_13.jpg" alt="Gas station final render">
+      <div class="card-reveal">
+        <div class="card-cat cat-green">Building · Commercial</div>
+        <div class="card-name">Gas Station — Final Render</div>
+      </div>
+    </div>
+
+    <!-- Bank interior -->
+    <div class="asset-card" data-category="buildings" data-group="2">
+      <img src="./images/Bank_01.png" alt="Low-poly bank with interior">
+      <div class="card-reveal">
+        <div class="card-cat cat-green">Building · Interior</div>
+        <div class="card-name">Bank with Full Interior</div>
+      </div>
+    </div>
+
+    <!-- Bank lobby -->
+    <div class="asset-card" data-category="buildings" data-group="2">
+      <img src="./images/Bank_02.jpg" alt="Bank lobby interior">
+      <div class="card-reveal">
+        <div class="card-cat cat-green">Building · Interior</div>
+        <div class="card-name">Bank — Lobby Interior</div>
+      </div>
+    </div>
+
+    <!-- Bank teller -->
+    <div class="asset-card" data-category="buildings" data-group="2">
+      <img src="./images/Bank_03.jpg" alt="Bank teller counter">
+      <div class="card-reveal">
+        <div class="card-cat cat-green">Building · Interior</div>
+        <div class="card-name">Bank — Teller Counter</div>
+      </div>
+    </div>
+
+    <!-- Bank exterior -->
+    <div class="asset-card" data-category="buildings" data-group="2">
+      <img src="./images/Bank_04.jpg" alt="Bank exterior facade">
+      <div class="card-reveal">
+        <div class="card-cat cat-green">Building · Exterior</div>
+        <div class="card-name">Bank — Exterior Facade</div>
+      </div>
+    </div>
+
+    <!-- Props wide -->
+    <div class="asset-card" style="grid-column: span 2;" data-category="props" data-group="2">
+      <img src="./images/Lowpoly_Billboard_01.jpg" alt="Props and street furniture">
+      <div class="card-reveal">
+        <div class="card-cat cat-green">Props · Street Furniture</div>
+        <div class="card-name">Bus Stops, Road Signs & Barriers</div>
+      </div>
+    </div>
+
+    <!-- Billboard 2 -->
+    <div class="asset-card" data-category="props" data-group="2">
+      <img src="./images/Lowpoly_Billboard_02.jpg" alt="Billboard variant two">
+      <div class="card-reveal">
+        <div class="card-cat cat-green">Props · Street Furniture</div>
+        <div class="card-name">Billboard Variant 2</div>
+      </div>
+    </div>
+
+    <!-- Billboard 3 -->
+    <div class="asset-card" data-category="props" data-group="2">
+      <img src="./images/Lowpoly_Billboard_03.jpg" alt="Billboard variant three">
+      <div class="card-reveal">
+        <div class="card-cat cat-green">Props · Street Furniture</div>
+        <div class="card-name">Billboard Variant 3</div>
+      </div>
+    </div>
+
+    <!-- Billboard 4 -->
+    <div class="asset-card" data-category="props" data-group="2">
+      <img src="./images/Lowpoly_Billboard_04.jpg" alt="Roadside barrier set">
+      <div class="card-reveal">
+        <div class="card-cat cat-green">Props · Street Furniture</div>
+        <div class="card-name">Roadside Barrier Set</div>
+      </div>
+    </div>
+
+    <!-- Billboard 5 -->
+    <div class="asset-card" data-category="props" data-group="2">
+      <img src="./images/Lowpoly_Billboard_05.jpg" alt="Bus stop shelter">
+      <div class="card-reveal">
+        <div class="card-cat cat-green">Props · Street Furniture</div>
+        <div class="card-name">Bus Stop Shelter</div>
+      </div>
+    </div>
+
+    <!-- Billboard 6 -->
+    <div class="asset-card" data-category="props" data-group="2">
+      <img src="./images/Lowpoly_Billboard_06.jpg" alt="Street sign pack">
+      <div class="card-reveal">
+        <div class="card-cat cat-green">Props · Street Furniture</div>
+        <div class="card-name">Street Sign Pack</div>
+      </div>
+    </div>
+
+    <!-- Billboard 7 -->
+    <div class="asset-card" data-category="props" data-group="2">
+      <img src="./images/Lowpoly_Billboard_07.jpg" alt="Billboard final layout">
+      <div class="card-reveal">
+        <div class="card-cat cat-green">Props · Street Furniture</div>
+        <div class="card-name">Billboard — Final Layout</div>
+      </div>
+    </div>
+
+    <!-- Computer + UV -->
+    <div class="asset-card" data-category="props" data-group="2">
+      <img src="./images/Lowpoly_Computer_01.jpg" alt="Low-poly computer with UV unwrap">
+      <div class="card-reveal">
+        <div class="card-cat cat-green">Props · Tech · UV Unwrapped</div>
+        <div class="card-name">Computer + Keyboard UV Pack</div>
+      </div>
+    </div>
+
+    <!-- Computer monitor -->
+    <div class="asset-card" data-category="props" data-group="2">
+      <img src="./images/Lowpoly_Computer_02.jpg" alt="Computer monitor detail">
+      <div class="card-reveal">
+        <div class="card-cat cat-green">Props · Tech</div>
+        <div class="card-name">Computer — Monitor Detail</div>
+      </div>
+    </div>
+
+    <!-- Computer keyboard -->
+    <div class="asset-card" data-category="props" data-group="2">
+      <img src="./images/Lowpoly_Computer_03.jpg" alt="Computer keyboard detail">
+      <div class="card-reveal">
+        <div class="card-cat cat-green">Props · Tech</div>
+        <div class="card-name">Computer — Keyboard Detail</div>
+      </div>
+    </div>
+
+    <!-- Computer desk -->
+    <div class="asset-card" data-category="props" data-group="2">
+      <img src="./images/Lowpoly_Computer_04.jpg" alt="Computer desk setup">
+      <div class="card-reveal">
+        <div class="card-cat cat-green">Props · Tech</div>
+        <div class="card-name">Computer — Desk Setup</div>
+      </div>
+    </div>
+
+    <!-- ATM -->
+    <div class="asset-card" data-category="props" data-group="2">
+      <img src="./images/Lowpoly_ATM.jpg" alt="ATM machine model">
+      <div class="card-reveal">
+        <div class="card-cat cat-green">Props · Tech</div>
+        <div class="card-name">ATM Machine Model</div>
+      </div>
+    </div>
+
+    <!-- Multimeter -->
+    <div class="asset-card" data-category="props" data-group="2">
+      <img src="./images/Electric_Current_Checker_01.jpg" alt="Digital multimeter model">
+      <div class="card-reveal">
+        <div class="card-cat cat-green">Props · Tech</div>
+        <div class="card-name">Digital Multimeter Model</div>
+      </div>
+    </div>
+
+  </div>
+</section>
+  
+<!-- ══ SECTION 3: STAGE DESIGN ══════════════════════════════ -->
+<section class="section" id="stagedesign">
+  <div class="section-header">
+    <span class="section-label label-gold">Concert &amp; Festival Design</span>
+    <h2 class="section-title">Stage Design</h2>
+  </div>
+  <p class="section-desc">
+    Photorealistic Blender renders — bedrooms, living rooms, kitchens, corporate spaces, and modern exteriors. Every scene is lit and composed to feel like a real photograph.
+  </p>
+
+  <div class="filter-bar" id="filterBar3">
+    <button class="filter-btn active-gold" data-filter="all" data-group="3">All</button>
+    <button class="filter-btn" data-filter="event" data-group="3">Event Stage</button>
+    <button class="filter-btn" data-filter="drone" data-group="3">Drone</button>
+    
+  </div>
+
+  <div class="gallery" id="gallery3">
+
+    <div class="card g-wide g-tall" data-category="exterior" data-group="3">
+      <img src="./images/Synthetic Turf Stadium_01.png" alt="Synthetic Turf Stadium">
+      <div class="card-reveal">
+        <div class="card-cat cat-gold">Exterior · Architecture</div>
+        <div class="card-name">Synthetic Turf Stadium</div>
+      </div>
+    </div>
+
+    <div class="card g-slim g-tall" data-category="all" data-group="3">
+      <img src="./images/Synthetic Turf Stadium_02.png" alt="Synthetic Turf Stadium">
+      <div class="card-reveal">
+        <div class="card-cat cat-gold">Concert &amp; Festival Design</div>
+        <div class="card-name">Synthetic Turf Stadium</div>
+      </div>
+    </div>
+
+    <div class="card g-med" data-category="all" data-group="3">
+      <img src="./images/Synthetic Turf Stadium_03.png" alt="Synthetic Turf Stadium">
+      <div class="card-reveal">
+        <div class="card-cat cat-gold">Concert &amp; Festival Design</div>
+        <div class="card-name">Synthetic Turf Stadium</div>
+      </div>
+    </div>
+
+    <div class="card g-med" data-category="all" data-group="3">
+      <img src="./images/Synthetic Turf Stadium_04.png" alt="Synthetic Turf Stadium">
+      <div class="card-reveal">
+        <div class="card-cat cat-gold">Concert &amp; Festival Design</div>
+        <div class="card-name">Synthetic Turf Stadium</div>
+      </div>
+    </div>
+    
+    <div class="card g-med" data-category="drone" data-group="3">
+      <img src="./images/Synthetic Turf Stadium__Drone_View.png" alt="Synthetic Turf Stadium">
+      <div class="card-reveal">
+        <div class="card-cat cat-gold">Concert &amp; Festival Design</div>
+        <div class="card-name">Synthetic Turf Stadium</div>
+      </div>
+    </div>
+
+    
+    <div class="card g-wide" data-category="event" data-group="3">
+      <img src="./images/Event_Stage_01.jpeg" alt="Event stage design render view 1" loading="lazy" decoding="async">
+      <div class="card-reveal">
+        <div class="card-cat cat-gold">Concert &amp; Festival Design</div>
+        <div class="card-name">Event Stage — View 1</div>
+      </div>
+    </div>
+
+    <div class="card g-slim" data-category="event" data-group="3">
+      <img src="./images/Event_Stage_02.jpeg" alt="Event stage design render view 2" loading="lazy" decoding="async">
+      <div class="card-reveal">
+        <div class="card-cat cat-gold">Concert &amp; Festival Design</div>
+        <div class="card-name">Event Stage — View 2</div>
+      </div>
+    </div>
+
+    <div class="card g-wide" style="grid-column: span 12;" data-category="event" data-group="3">
+      <img src="./images/Event_Stage_03.jpeg" alt="Event stage design render view 3" loading="lazy" decoding="async">
+      <div class="card-reveal">
+        <div class="card-cat cat-gold">Concert &amp; Festival Design</div>
+        <div class="card-name">Event Stage — View 3</div>
+      </div>
+    </div>
+
+  </div>
+</section>
+<!-- ══ ABOUT ═════════════════════════════════════════════════════ -->
+<section class="section" id="about">
+  <div class="section-header">
+    <span class="section-label label-gold">About</span>
+    <h2 class="section-title">The Studio</h2>
+  </div>
+  <div class="about-grid">
+    <div class="about-text">
+      <p>
+        We're <strong>Horlar Studio</strong>, a 3D visualization and game-asset studio based in
+        working in Blender. Our work sits at two ends of the same
+        discipline — photorealistic <strong>architectural visualization</strong> and
+        <strong>low-poly game asset creation</strong>.
+      </p>
+      <p>
+        On the visualization side, we craft renders that communicate the true feel of a space before it's built —
+        from school interiors and warm bedrooms to crisp corporate environments, building exteriors, landscapes,
+        and concert stages. Every material, shadow, and composition is deliberate.
+      </p>
+      <p>
+        On the game side, we build <strong>performance-first 3D assets</strong>: environments, vehicles,
+        buildings, and props with clean topology, game-engine-ready UV maps, and proper polygon budgets.
+        Delivered in FBX, OBJ, or BLEND — ready to drop straight into your pipeline.
+      </p>
+      <div class="stats-row">
+        <div>
+          <div class="stat-num">50+</div>
+          <div class="stat-label">Projects Done</div>
+        </div>
+        <div>
+          <div class="stat-num">5★</div>
+          <div class="stat-label">Fiverr Seller</div>
+        </div>
+        <div>
+          <div class="stat-num">2+</div>
+          <div class="stat-label">Years in Blender</div>
+        </div>
+      </div>
+    </div>
+    <div class="skills-col">
+      <div class="skill-group">
+        <div class="skill-group-title gold">Interior &amp; Architectural Visualization</div>
+        <div class="skill-row">
+          <div class="skill-meta">
+            <span class="skill-name">Blender · Cycles Rendering</span>
+            <span class="skill-pct pct-gold">95%</span>
+          </div>
+          <div class="skill-bar"><div class="skill-fill fill-gold" data-w="95%"></div></div>
+        </div>
+        <div class="skill-row">
+          <div class="skill-meta">
+            <span class="skill-name">Lighting &amp; HDRI Setup</span>
+            <span class="skill-pct pct-gold">92%</span>
+          </div>
+          <div class="skill-bar"><div class="skill-fill fill-gold" data-w="92%"></div></div>
+        </div>
+        <div class="skill-row">
+          <div class="skill-meta">
+            <span class="skill-name">Material &amp; PBR Shading</span>
+            <span class="skill-pct pct-gold">90%</span>
+          </div>
+          <div class="skill-bar"><div class="skill-fill fill-gold" data-w="90%"></div></div>
+        </div>
+      </div>
+      <div class="skill-group">
+        <div class="skill-group-title green">Low-Poly Game Assets</div>
+        <div class="skill-row">
+          <div class="skill-meta">
+            <span class="skill-name">Low-Poly Modeling</span>
+            <span class="skill-pct pct-green">92%</span>
+          </div>
+          <div class="skill-bar"><div class="skill-fill fill-green" data-w="92%"></div></div>
+        </div>
+        <div class="skill-row">
+          <div class="skill-meta">
+            <span class="skill-name">UV Unwrapping</span>
+            <span class="skill-pct pct-green">90%</span>
+          </div>
+          <div class="skill-bar"><div class="skill-fill fill-green" data-w="90%"></div></div>
+        </div>
+        <div class="skill-row">
+          <div class="skill-meta">
+            <span class="skill-name">Environment Pack Design</span>
+            <span class="skill-pct pct-green">87%</span>
+          </div>
+          <div class="skill-bar"><div class="skill-fill fill-green" data-w="87%"></div></div>
+        </div>
+        <div class="skill-row">
+          <div class="skill-meta">
+            <span class="skill-name">FBX / OBJ Export Pipeline</span>
+            <span class="skill-pct pct-green">88%</span>
+          </div>
+          <div class="skill-bar"><div class="skill-fill fill-green" data-w="88%"></div></div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ══ CTA ═══════════════════════════════════════════════════════ -->
+<section class="cta-section" id="contact">
+  <p class="cta-eyebrow">Open for Projects · Fast Delivery</p>
+  <h2 class="cta-title">Let's build something <em>extraordinary.</em></h2>
+  <p class="cta-sub">Whether it's a photorealistic render or a full game asset pack — send your brief and let's talk.</p>
+  <div class="cta-buttons">
+    <a class="btn-primary" href="https://www.fiverr.com/sabbi_19" target="_blank" rel="noopener">↗ Hire on Fiverr</a>
+    <a class="btn-secondary" href="https://www.linkedin.com/in/sabbi19" target="_blank" rel="noopener">LinkedIn Profile</a>
+  </div>
+</section>
+
+<!-- ── FOOTER ─────────────────────────────────────────────────── -->
+<footer>
+  <div class="footer-logo"><span>H</span>ORLAR STUDIO</div>
+  <span class="footer-copy">© 2026 Horlar Studio · 3D Visualization &amp; Game Assets · Faisalabad, Pakistan</span>
+  <div class="footer-links">
+    <a href="https://www.fiverr.com/sabbi_19" target="_blank">Fiverr</a>
+    <a href="https://www.linkedin.com/in/saqib-ali-6b1b10286/" target="_blank">LinkedIn</a>
+    <a href="mailto:your@email.com">Email</a>
+  </div>
+</footer>
+
+<!-- ── LIGHTBOX HTML ───────────────────────────────────────────── -->
+<div class="lb-overlay" id="lightbox" role="dialog" aria-modal="true">
+  <div class="lb-box" id="lbBox">
+    <button class="lb-close" id="lbClose" aria-label="Close">✕</button>
+    <button class="lb-nav lb-prev" id="lbPrev" aria-label="Previous">‹</button>
+    <button class="lb-nav lb-next" id="lbNext" aria-label="Next">›</button>
+    <img id="lbImg" src="" alt="">
+    <div class="lb-caption">
+      <div>
+        <div class="lb-caption-cat" id="lbCat"></div>
+        <div class="lb-caption-text" id="lbName"></div>
+      </div>
+      <div class="lb-counter" id="lbCounter"></div>
+    </div>
+  </div>
+</div>
+
+<!-- ── SCRIPTS ────────────────────────────────────────────────── -->
+<script>
+  /* ── Scrolled nav ── */
+  const nav = document.getElementById('mainNav');
+  window.addEventListener('scroll', () => {
+    nav.classList.toggle('scrolled', window.scrollY > 50);
+  });
+
+  /* ── Gallery filter ── */
+  document.querySelectorAll('.filter-btn').forEach(btn => {
+    btn.addEventListener('click', () => {
+      const group = btn.dataset.group;
+      const filter = btn.dataset.filter;
+      document.querySelectorAll(`.filter-btn[data-group="${group}"]`).forEach(b => {
+        b.classList.remove('active-gold', 'active-green');
+      });
+      btn.classList.add(group === '2' ? 'active-green' : 'active-gold');
+      document.querySelectorAll(`[data-group="${group}"]`).forEach(card => {
+        if (!card.classList.contains('filter-btn')) {
+          card.classList.toggle('hidden', filter !== 'all' && card.dataset.category !== filter);
+        }
+      });
+    });
+  });
+
+  /* ── Skill bars ── */
+  const fills = document.querySelectorAll('.skill-fill');
+  const obs = new IntersectionObserver(entries => {
+    entries.forEach(e => {
+      if (e.isIntersecting) {
+        e.target.style.width = e.target.dataset.w;
+        obs.unobserve(e.target);
+      }
+    });
+  }, { threshold: 0.3 });
+  fills.forEach(f => obs.observe(f));
+
+  /* ── Lightbox ── */
+  const lb        = document.getElementById('lightbox');
+  const lbImg     = document.getElementById('lbImg');
+  const lbName    = document.getElementById('lbName');
+  const lbCat     = document.getElementById('lbCat');
+  const lbCounter = document.getElementById('lbCounter');
+  const lbClose   = document.getElementById('lbClose');
+  const lbPrev    = document.getElementById('lbPrev');
+  const lbNext    = document.getElementById('lbNext');
+  const lbBox     = document.getElementById('lbBox');
+
+  let images = [];   /* all clickable images */
+  let current = 0;
+
+  /* Collect all card/asset-card images */
+  function buildImageList() {
+    images = [];
+    document.querySelectorAll('.card:not(.hidden) img, .asset-card:not(.hidden) img').forEach(img => {
+      const card = img.closest('.card, .asset-card');
+      images.push({
+        src:  img.src,
+        alt:  img.alt,
+        name: card.querySelector('.card-name')?.textContent || '',
+        cat:  card.querySelector('.card-cat')?.textContent  || ''
+      });
+    });
+  }
+
+  function openLightbox(idx) {
+    buildImageList();
+    current = idx;
+    showImage();
+    lb.classList.add('open');
+    document.body.style.overflow = 'hidden';
+    lbImg.focus();
+  }
+
+  function showImage() {
+    const item = images[current];
+    if (!item) return;
+    /* animate swap */
+    lbImg.style.opacity = '0';
+    lbImg.style.transform = 'scale(0.96)';
+    setTimeout(() => {
+      lbImg.src = item.src;
+      lbImg.alt = item.alt;
+      lbName.textContent = item.name;
+      lbCat.textContent  = item.cat;
+      lbCounter.textContent = `${current + 1} / ${images.length}`;
+      lbImg.style.opacity = '1';
+      lbImg.style.transform = 'scale(1)';
+    }, 120);
+    lbImg.style.transition = 'opacity 0.18s, transform 0.18s';
+  }
+
+  function closeLightbox() {
+    lb.classList.remove('open');
+    document.body.style.overflow = '';
+  }
+
+  /* Click on any card triggers lightbox */
+  document.addEventListener('click', e => {
+    const card = e.target.closest('.card, .asset-card');
+    if (!card || e.target.closest('.filter-btn')) return;
+
+    buildImageList();
+    const img = card.querySelector('img');
+    const idx = images.findIndex(i => i.src === img.src);
+    if (idx !== -1) openLightbox(idx);
+  });
+
+  /* Controls */
+  lbClose.addEventListener('click', e => { e.stopPropagation(); closeLightbox(); });
+  lb.addEventListener('click', e => { if (e.target === lb) closeLightbox(); });
+  lbPrev.addEventListener('click', e => {
+    e.stopPropagation();
+    current = (current - 1 + images.length) % images.length;
+    showImage();
+  });
+  lbNext.addEventListener('click', e => {
+    e.stopPropagation();
+    current = (current + 1) % images.length;
+    showImage();
+  });
+
+  /* Keyboard navigation */
+  document.addEventListener('keydown', e => {
+    if (!lb.classList.contains('open')) return;
+    if (e.key === 'Escape')     closeLightbox();
+    if (e.key === 'ArrowRight') { current = (current + 1) % images.length; showImage(); }
+    if (e.key === 'ArrowLeft')  { current = (current - 1 + images.length) % images.length; showImage(); }
+  });
+
+  /* Touch swipe support */
+  let touchStartX = 0;
+  lb.addEventListener('touchstart', e => { touchStartX = e.touches[0].clientX; }, { passive: true });
+  lb.addEventListener('touchend', e => {
+    const diff = touchStartX - e.changedTouches[0].clientX;
+    if (Math.abs(diff) > 50) {
+      current = diff > 0
+        ? (current + 1) % images.length
+        : (current - 1 + images.length) % images.length;
+      showImage();
+    }
+  });
+</script>
+</body>
+</html>
